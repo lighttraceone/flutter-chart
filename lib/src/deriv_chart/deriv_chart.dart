@@ -66,6 +66,7 @@ class DerivChart extends StatefulWidget {
     this.bottomChartTitleMargin,
     this.showDataFitButton,
     this.showScrollToLastTickButton,
+    this.showOverlayIndicatorLabels = true,
     this.loadingAnimationColor,
     this.crosshairVariant = CrosshairVariant.smallScreen,
     this.interactiveLayerBehaviour,
@@ -168,6 +169,9 @@ class DerivChart extends StatefulWidget {
 
   /// Whether to show the scroll to last tick button or not.
   final bool? showScrollToLastTickButton;
+
+  /// Whether to show overlay indicator labels on the top-left of the main chart.
+  final bool showOverlayIndicatorLabels;
 
   /// The color of the loading animation.
   final Color? loadingAnimationColor;
@@ -404,6 +408,7 @@ class _DerivChartState extends State<DerivChart> {
                 bottomChartTitleMargin: widget.bottomChartTitleMargin,
                 showDataFitButton: widget.showDataFitButton,
                 showScrollToLastTickButton: widget.showScrollToLastTickButton,
+                showOverlayIndicatorLabels: widget.showOverlayIndicatorLabels,
                 loadingAnimationColor: widget.loadingAnimationColor,
                 chartAxisConfig: widget.chartAxisConfig,
                 crosshairVariant: widget.crosshairVariant,

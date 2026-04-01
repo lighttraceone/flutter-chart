@@ -145,16 +145,17 @@ class _ChartStateMobile extends _ChartState {
                   interactiveLayerBehaviour: widget.interactiveLayerBehaviour,
                   useDrawingToolsV2: widget.useDrawingToolsV2,
                 ),
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: Dimens.margin08,
-                      horizontal: Dimens.margin04,
+                if (widget.showOverlayIndicatorLabels)
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: Dimens.margin08,
+                        horizontal: Dimens.margin04,
+                      ),
+                      child: _buildOverlayIndicatorsLabels(),
                     ),
-                    child: _buildOverlayIndicatorsLabels(),
                   ),
-                ),
               ],
             ),
           ),
