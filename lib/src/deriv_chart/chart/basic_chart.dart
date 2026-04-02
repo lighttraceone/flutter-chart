@@ -35,6 +35,7 @@ class BasicChart extends StatefulWidget {
     this.onQuoteAreaChanged,
     this.currentTickAnimationDuration = _defaultDuration,
     this.quoteBoundsAnimationDuration = _defaultDuration,
+    this.maxQuoteGridLines,
   })  : chartAxisConfig = chartAxisConfig ?? const ChartAxisConfig(),
         super(key: key);
 
@@ -58,6 +59,10 @@ class BasicChart extends StatefulWidget {
 
   /// Duration of quote bounds animated transition.
   final Duration quoteBoundsAnimationDuration;
+
+  /// Maximum number of horizontal grid lines to display.
+  /// If null, the default dynamic calculation is used.
+  final int? maxQuoteGridLines;
 
   @override
   BasicChartState<BasicChart> createState() => BasicChartState<BasicChart>();
@@ -202,7 +207,20 @@ class BasicChartState<T extends BasicChart> extends State<T> with TickerProvider
   /// Call function to calculate the grid line quotes and put them inside
   /// [yAxisModel].
   List<double> calculateGridLineQuotes(YAxisModel yAxisModel) {
-    final List<double> newGridLineQuotes = yAxisModel.gridQuotes();
+    List<double> newGridLineQuotes = yAxisModel.gridQuotes();
+
+    if (widget.maxQuoteGridLines != null &&
+        newGridLineQuotes.length > widget.maxQuoteGridLines!) {
+      // Evenly sample grid lines to fit within the limit.
+      final int total = newGridLineQuotes.length;
+      final int max = widget.maxQuoteGridLines!;
+      final List<double> sampled = <double>[];
+      for (int i = 0; i < max; i++) {
+        final int idx = (i * (total - 1) / (max - 1)).round();
+        sampled.add(newGridLineQuotes[idx]);
+      }
+      newGridLineQuotes = sampled;
+    }
 
     if (newGridLineQuotes.isNotEmpty &&
         (gridLineQuotes == null ||

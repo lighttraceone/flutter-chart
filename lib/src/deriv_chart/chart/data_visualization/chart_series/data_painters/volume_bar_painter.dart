@@ -43,7 +43,7 @@ class VolumeBarPainter extends DataPainter<DataSeries<Tick>> {
 
     final double intervalWidth =
         epochToX(chartConfig.granularity) - epochToX(0);
-    final double barWidth = intervalWidth * 0.6;
+    final double barWidth = intervalWidth * 0.8;
     final double bottomY = size.height;
 
     for (int i = series.visibleEntries.startIndex;

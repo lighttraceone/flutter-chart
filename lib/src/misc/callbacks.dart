@@ -1,4 +1,5 @@
 import 'package:deriv_chart/src/add_ons/add_on_config.dart';
+import 'package:deriv_chart/src/add_ons/indicators_ui/indicator_config.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/chart_data.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/chart_series/data_series.dart';
 import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshair_variant.dart';
@@ -81,4 +82,13 @@ class CrosshairDetailsData {
 typedef CrosshairDetailsBuilder = Widget Function(
   BuildContext context,
   CrosshairDetailsData data,
+);
+
+/// Builds a custom title widget for a bottom chart indicator.
+///
+/// [config] is the indicator configuration for this bottom chart.
+/// Return `null` to use the default title.
+typedef BottomChartTitleBuilder = Widget? Function(
+  BuildContext context,
+  IndicatorConfig config,
 );

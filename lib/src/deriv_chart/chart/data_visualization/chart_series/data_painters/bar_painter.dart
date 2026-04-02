@@ -48,7 +48,7 @@ class BarPainter extends DataPainter<DataSeries<Tick>> {
     final double intervalWidth =
         epochToX(chartConfig.granularity) - epochToX(0);
 
-    final double barWidth = intervalWidth * 0.6;
+    final double barWidth = intervalWidth * 0.8;
 
     // Painting visible bars except the last one that might be animated.
     for (int i = series.visibleEntries.startIndex;

@@ -30,8 +30,11 @@ class BottomChartMobile extends BasicChart {
     this.showMoveUpIcon = false,
     this.showMoveDownIcon = false,
     this.bottomChartTitleMargin,
+    this.customTitleWidget,
+    this.dividerColor,
     super.currentTickAnimationDuration,
     super.quoteBoundsAnimationDuration,
+    super.maxQuoteGridLines,
   }) : super(key: key, mainSeries: series, pipSize: pipSize);
 
   /// For candles: Duration of one candle in ms.
@@ -58,6 +61,12 @@ class BottomChartMobile extends BasicChart {
 
   /// Specifies the margin to prevent overlap.
   final EdgeInsets? bottomChartTitleMargin;
+
+  /// Optional custom title widget to replace the default indicator label.
+  final Widget? customTitleWidget;
+
+  /// Custom color for the bottom divider line.
+  final Color? dividerColor;
 
   /// Whether to show the frame or not.
   final bool showFrame;
@@ -102,7 +111,7 @@ class _BottomChartMobileState extends BasicChartState<BottomChartMobile> {
                   Positioned(
                     top: 4,
                     left: widget.bottomChartTitleMargin?.left ?? 10,
-                    child: _buildIndicatorLabelMobile(),
+                    child: widget.customTitleWidget ?? _buildIndicatorLabelMobile(),
                   )
                 ],
               ),
@@ -129,10 +138,10 @@ class _BottomChartMobileState extends BasicChartState<BottomChartMobile> {
         onSwap: widget.onSwap,
       );
 
-  Widget _buildDivider() => const Divider(
+  Widget _buildDivider() => Divider(
         height: 0.5,
-        thickness: 1,
-        color: LegacyLightThemeColors.hover,
+        thickness: widget.dividerColor != null ? 0.5 : 1,
+        color: widget.dividerColor ?? LegacyLightThemeColors.hover,
       );
 
   Widget _buildCollapsedBottomChart(BuildContext context) => Container(

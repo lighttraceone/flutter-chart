@@ -84,6 +84,9 @@ class Chart extends StatefulWidget {
     this.crosshairDetailsBuilder,
     this.loadingAnimationColor,
     this.useDrawingToolsV2 = false,
+    this.bottomChartTitleBuilder,
+    this.bottomChartDividerColor,
+    this.bottomChartMaxGridLines,
     Key? key,
   }) : super(key: key);
 
@@ -206,6 +209,15 @@ class Chart extends StatefulWidget {
 
   /// The color of the loading animation.
   final Color? loadingAnimationColor;
+
+  /// Builds a custom title widget for a bottom chart indicator.
+  final BottomChartTitleBuilder? bottomChartTitleBuilder;
+
+  /// Custom color for bottom chart dividers.
+  final Color? bottomChartDividerColor;
+
+  /// Maximum number of horizontal grid lines for bottom charts.
+  final int? bottomChartMaxGridLines;
 
   /// Chart's indicators
   final Repository<IndicatorConfig>? indicatorsRepo;

@@ -76,6 +76,9 @@ class DerivChart extends StatefulWidget {
     this.crosshairVariant = CrosshairVariant.smallScreen,
     this.interactiveLayerBehaviour,
     this.useDrawingToolsV2 = false,
+    this.bottomChartTitleBuilder,
+    this.bottomChartDividerColor,
+    this.bottomChartMaxGridLines,
     Key? key,
   }) : super(key: key);
 
@@ -223,6 +226,16 @@ class DerivChart extends StatefulWidget {
   /// If not set it will be set internally to [InteractiveLayerDesktopBehaviour]
   /// on web and [InteractiveLayerMobileBehaviour] on mobile or other platforms.
   final InteractiveLayerBehaviour? interactiveLayerBehaviour;
+
+  /// Builds a custom title widget for a bottom chart indicator.
+  /// Return `null` to use the default title.
+  final BottomChartTitleBuilder? bottomChartTitleBuilder;
+
+  /// Custom color for bottom chart dividers.
+  final Color? bottomChartDividerColor;
+
+  /// Maximum number of horizontal grid lines for bottom charts.
+  final int? bottomChartMaxGridLines;
 
   @override
   _DerivChartState createState() => _DerivChartState();
@@ -427,6 +440,9 @@ class _DerivChartState extends State<DerivChart> {
                 crosshairVariant: widget.crosshairVariant,
                 interactiveLayerBehaviour: _interactiveLayerBehaviour,
                 useDrawingToolsV2: widget.useDrawingToolsV2,
+                bottomChartTitleBuilder: widget.bottomChartTitleBuilder,
+                bottomChartDividerColor: widget.bottomChartDividerColor,
+                bottomChartMaxGridLines: widget.bottomChartMaxGridLines,
               ),
               if (widget.indicatorsRepo == null) _buildIndicatorsIcon(),
               if (widget.drawingToolsRepo == null && widget.showDrawingToolsIcon)

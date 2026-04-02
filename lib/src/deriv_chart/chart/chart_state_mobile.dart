@@ -53,6 +53,9 @@ class _ChartStateMobile extends _ChartState {
           final int indexInBottomConfigs =
               referenceIndexOf(widget.bottomConfigs, config);
 
+          final Widget? customTitle =
+              widget.bottomChartTitleBuilder?.call(context, config);
+
           final Widget bottomChart = BottomChartMobile(
             series: series,
             isHidden: repository?.getHiddenStatus(index) ?? false,
@@ -65,6 +68,9 @@ class _ChartStateMobile extends _ChartState {
             quoteBoundsAnimationDuration: quoteBoundsAnimationDuration,
             bottomChartTitleMargin:
                 const EdgeInsets.only(left: Dimens.margin04),
+            customTitleWidget: customTitle,
+            dividerColor: widget.bottomChartDividerColor,
+            maxQuoteGridLines: widget.bottomChartMaxGridLines,
             onHideUnhideToggle: () =>
                 _onIndicatorHideToggleTapped(repository, index),
             onSwap: (int offset) => _onSwap(
