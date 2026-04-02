@@ -28,18 +28,14 @@ abstract class OhlcPainter extends DataPainter<DataSeries<Candle>> {
       return;
     }
 
-    final double intervalWidth =
-        epochToX(chartConfig.granularity) - epochToX(0);
+    final double intervalWidth = epochToX(chartConfig.granularity) - epochToX(0);
 
-    final double candleWidth = intervalWidth * 0.6;
+    final double candleWidth = intervalWidth * 0.8;
 
     // Painting visible candles except the last one that might be animated.
-    for (int i = series.visibleEntries.startIndex;
-        i < series.visibleEntries.endIndex - 1;
-        i++) {
+    for (int i = series.visibleEntries.startIndex; i < series.visibleEntries.endIndex - 1; i++) {
       final Candle candle = series.entries![i];
-      final Candle prevCandle =
-          i != 0 ? series.entries![i - 1] : series.entries![0];
+      final Candle prevCandle = i != 0 ? series.entries![i - 1] : series.entries![0];
 
       onPaintCandle(
           canvas,
@@ -102,8 +98,7 @@ abstract class OhlcPainter extends DataPainter<DataSeries<Candle>> {
       );
     } else {
       lastCandlePainting = OhlcPainting(
-        xCenter: epochToX(
-            getEpochOf(lastVisibleCandle, series.visibleEntries.endIndex - 1)),
+        xCenter: epochToX(getEpochOf(lastVisibleCandle, series.visibleEntries.endIndex - 1)),
         yHigh: quoteToY(lastVisibleCandle.high),
         yLow: quoteToY(lastVisibleCandle.low),
         yOpen: quoteToY(lastVisibleCandle.open),
@@ -113,8 +108,7 @@ abstract class OhlcPainter extends DataPainter<DataSeries<Candle>> {
     }
 
     prevLastCandlePainting = OhlcPainting(
-      xCenter: epochToX(
-          getEpochOf(prevLastCandle, series.visibleEntries.endIndex - 1)),
+      xCenter: epochToX(getEpochOf(prevLastCandle, series.visibleEntries.endIndex - 1)),
       yHigh: quoteToY(prevLastCandle.high),
       yLow: quoteToY(prevLastCandle.low),
       yOpen: quoteToY(prevLastCandle.open),
