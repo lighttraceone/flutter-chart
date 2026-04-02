@@ -327,26 +327,37 @@ class BasicChartState<T extends BasicChart> extends State<T> with TickerProvider
     final bool rangeDisjoint = maxQuote < bottomBoundQuoteTarget || minQuote > topBoundQuoteTarget;
     if (rangeDisjoint) {
       bottomBoundQuoteTarget = minQuote;
-      bottomBoundQuoteAnimationController.value = minQuote;
       topBoundQuoteTarget = maxQuote;
-      topBoundQuoteAnimationController.value = maxQuote;
-      completeCurrentTickAnimation();
+      // Defer controller value updates to after the build phase to avoid
+      // triggering markNeedsBuild() during build.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        bottomBoundQuoteAnimationController.value = minQuote;
+        topBoundQuoteAnimationController.value = maxQuote;
+        completeCurrentTickAnimation();
+      });
       return;
     }
 
     if (minQuote != bottomBoundQuoteTarget) {
       bottomBoundQuoteTarget = minQuote;
-      bottomBoundQuoteAnimationController.animateTo(
-        bottomBoundQuoteTarget,
-        curve: Curves.easeOut,
-      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        bottomBoundQuoteAnimationController.animateTo(
+          bottomBoundQuoteTarget,
+          curve: Curves.easeOut,
+        );
+      });
     }
     if (maxQuote != topBoundQuoteTarget) {
       topBoundQuoteTarget = maxQuote;
-      topBoundQuoteAnimationController.animateTo(
-        topBoundQuoteTarget,
-        curve: Curves.easeOut,
-      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        topBoundQuoteAnimationController.animateTo(
+          topBoundQuoteTarget,
+          curve: Curves.easeOut,
+        );
+      });
     }
   }
 
