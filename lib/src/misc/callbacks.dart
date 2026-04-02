@@ -1,6 +1,9 @@
 import 'package:deriv_chart/src/add_ons/add_on_config.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/chart_data.dart';
-import 'package:flutter/gestures.dart';
+import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/chart_series/data_series.dart';
+import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshair_variant.dart';
+import 'package:deriv_chart/src/models/tick.dart';
+import 'package:flutter/widgets.dart';
 
 /// Called when chart is scrolled or zoomed.
 ///
@@ -49,4 +52,33 @@ typedef OnCrosshairHoverCallback = void Function(
   EpochFromX epochFromX,
   QuoteFromY quoteFromY,
   AddOnConfig? config,
+);
+
+/// Data passed to a custom crosshair details builder.
+class CrosshairDetailsData {
+  /// Creates crosshair details data.
+  const CrosshairDetailsData({
+    required this.mainSeries,
+    required this.crosshairTick,
+    required this.pipSize,
+    required this.crosshairVariant,
+  });
+
+  /// The chart's main data series.
+  final DataSeries<Tick> mainSeries;
+
+  /// The current crosshair tick.
+  final Tick crosshairTick;
+
+  /// Number of decimal digits when showing prices.
+  final int pipSize;
+
+  /// The variant of the crosshair to be used.
+  final CrosshairVariant crosshairVariant;
+}
+
+/// Builds custom crosshair details content.
+typedef CrosshairDetailsBuilder = Widget Function(
+  BuildContext context,
+  CrosshairDetailsData data,
 );

@@ -33,9 +33,11 @@ class _ChartStateWeb extends _ChartState {
             showLoadingAnimationForHistoricalData: !widget.dataFitEnabled,
             showDataFitButton:
                 widget.showDataFitButton ?? widget.dataFitEnabled,
-            showScrollToLastTickButton:
-                widget.showScrollToLastTickButton ?? true,
-            opacity: widget.opacity,
+                  showScrollToLastTickButton:
+                      widget.showScrollToLastTickButton ?? true,
+                  showVisiblePriceExtremes: widget.showVisiblePriceExtremes,
+                  visiblePriceExtremesStyle: widget.visiblePriceExtremesStyle,
+                  opacity: widget.opacity,
             chartAxisConfig: widget.chartAxisConfig,
             verticalPaddingFraction: widget.verticalPaddingFraction,
             showCrosshair: widget.showCrosshair,
@@ -47,6 +49,7 @@ class _ChartStateWeb extends _ChartState {
             showCurrentTickBlinkAnimation:
                 widget.showCurrentTickBlinkAnimation ?? true,
             crosshairVariant: widget.crosshairVariant,
+            crosshairDetailsBuilder: widget.crosshairDetailsBuilder,
             interactiveLayerBehaviour: widget.interactiveLayerBehaviour,
             useDrawingToolsV2: widget.useDrawingToolsV2,
           ),

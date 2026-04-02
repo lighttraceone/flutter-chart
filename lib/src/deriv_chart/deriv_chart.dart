@@ -20,6 +20,7 @@ import 'package:deriv_chart/src/models/chart_axis_config.dart';
 import 'package:deriv_chart/src/misc/extensions.dart';
 import 'package:deriv_chart/src/models/tick.dart';
 import 'package:deriv_chart/src/theme/chart_theme.dart';
+import 'package:deriv_chart/src/theme/painting_styles/visible_price_extremes_style.dart';
 import 'package:deriv_chart/src/widgets/animated_popup.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -67,6 +68,10 @@ class DerivChart extends StatefulWidget {
     this.showDataFitButton,
     this.showScrollToLastTickButton,
     this.showOverlayIndicatorLabels = true,
+    this.showVisiblePriceExtremes = false,
+    this.visiblePriceExtremesStyle,
+    this.showDrawingToolsIcon = true,
+    this.crosshairDetailsBuilder,
     this.loadingAnimationColor,
     this.crosshairVariant = CrosshairVariant.smallScreen,
     this.interactiveLayerBehaviour,
@@ -173,6 +178,18 @@ class DerivChart extends StatefulWidget {
   /// Whether to show overlay indicator labels on the top-left of the main chart.
   final bool showOverlayIndicatorLabels;
 
+  /// Whether to show highest/lowest visible price markers on the main chart.
+  final bool showVisiblePriceExtremes;
+
+  /// Style config for highest/lowest visible price markers on the main chart.
+  final VisiblePriceExtremesStyle? visiblePriceExtremesStyle;
+
+  /// Whether to show the built-in drawing tools icon.
+  final bool showDrawingToolsIcon;
+
+  /// Builds custom crosshair details content.
+  final CrosshairDetailsBuilder? crosshairDetailsBuilder;
+
   /// The color of the loading animation.
   final Color? loadingAnimationColor;
 
@@ -226,10 +243,8 @@ class _DerivChartState extends State<DerivChart> {
 
     _interactiveLayerBehaviour = widget.interactiveLayerBehaviour ??
         (kIsWeb
-            ? InteractiveLayerDesktopBehaviour(
-                controller: InteractiveLayerController())
-            : InteractiveLayerMobileBehaviour(
-                controller: InteractiveLayerController()));
+            ? InteractiveLayerDesktopBehaviour(controller: InteractiveLayerController())
+            : InteractiveLayerMobileBehaviour(controller: InteractiveLayerController()));
 
     _initRepos();
   }
@@ -238,8 +253,7 @@ class _DerivChartState extends State<DerivChart> {
   void didUpdateWidget(covariant DerivChart oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (widget.drawingToolsRepo == null &&
-        widget.activeSymbol != oldWidget.activeSymbol) {
+    if (widget.drawingToolsRepo == null && widget.activeSymbol != oldWidget.activeSymbol) {
       // Delay loading until after the widget tree is fully built
       // This ensures InteractiveLayer and drawingContext are initialized
       // before syncDrawingsWithConfigs() tries to create InteractableDrawing objects
@@ -257,8 +271,7 @@ class _DerivChartState extends State<DerivChart> {
     );
 
     _drawingToolsRepo = AddOnsRepository<DrawingToolConfig>(
-      createAddOn: (Map<String, dynamic> map) =>
-          DrawingToolConfig.fromJson(map),
+      createAddOn: (Map<String, dynamic> map) => DrawingToolConfig.fromJson(map),
       onEditCallback: (_) => showDrawingToolsDialog(),
       sharedPrefKey: widget.activeSymbol,
     );
@@ -274,12 +287,12 @@ class _DerivChartState extends State<DerivChart> {
 
   Future<void> loadSavedIndicatorsAndDrawingTools() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final List<AddOnsRepository<AddOnConfig>> _stateRepos =
-        <AddOnsRepository<AddOnConfig>>[_indicatorsRepo, _drawingToolsRepo];
+    final List<AddOnsRepository<AddOnConfig>> _stateRepos = <AddOnsRepository<AddOnConfig>>[
+      _indicatorsRepo,
+      _drawingToolsRepo
+    ];
 
-    _stateRepos
-        .asMap()
-        .forEach((int index, AddOnsRepository<AddOnConfig> element) {
+    _stateRepos.asMap().forEach((int index, AddOnsRepository<AddOnConfig> element) {
       try {
         element.loadFromPrefs(prefs, widget.activeSymbol);
       } on Exception {
@@ -398,17 +411,17 @@ class _DerivChartState extends State<DerivChart> {
                 minIntervalWidth: widget.minIntervalWidth,
                 maxIntervalWidth: widget.maxIntervalWidth,
                 dataFitPadding: widget.dataFitPadding,
-                currentTickAnimationDuration:
-                    widget.currentTickAnimationDuration,
-                quoteBoundsAnimationDuration:
-                    widget.quoteBoundsAnimationDuration,
-                showCurrentTickBlinkAnimation:
-                    widget.showCurrentTickBlinkAnimation,
+                currentTickAnimationDuration: widget.currentTickAnimationDuration,
+                quoteBoundsAnimationDuration: widget.quoteBoundsAnimationDuration,
+                showCurrentTickBlinkAnimation: widget.showCurrentTickBlinkAnimation,
                 verticalPaddingFraction: widget.verticalPaddingFraction,
                 bottomChartTitleMargin: widget.bottomChartTitleMargin,
                 showDataFitButton: widget.showDataFitButton,
                 showScrollToLastTickButton: widget.showScrollToLastTickButton,
                 showOverlayIndicatorLabels: widget.showOverlayIndicatorLabels,
+                showVisiblePriceExtremes: widget.showVisiblePriceExtremes,
+                visiblePriceExtremesStyle: widget.visiblePriceExtremesStyle,
+                crosshairDetailsBuilder: widget.crosshairDetailsBuilder,
                 loadingAnimationColor: widget.loadingAnimationColor,
                 chartAxisConfig: widget.chartAxisConfig,
                 crosshairVariant: widget.crosshairVariant,
@@ -416,7 +429,8 @@ class _DerivChartState extends State<DerivChart> {
                 useDrawingToolsV2: widget.useDrawingToolsV2,
               ),
               if (widget.indicatorsRepo == null) _buildIndicatorsIcon(),
-              if (widget.drawingToolsRepo == null) _buildDrawingToolsIcon(),
+              if (widget.drawingToolsRepo == null && widget.showDrawingToolsIcon)
+                _buildDrawingToolsIcon(),
             ],
           ),
         ),

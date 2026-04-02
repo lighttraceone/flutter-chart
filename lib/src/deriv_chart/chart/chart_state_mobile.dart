@@ -130,6 +130,8 @@ class _ChartStateMobile extends _ChartState {
                       widget.showDataFitButton ?? widget.dataFitEnabled,
                   showScrollToLastTickButton:
                       widget.showScrollToLastTickButton ?? true,
+                  showVisiblePriceExtremes: widget.showVisiblePriceExtremes,
+                  visiblePriceExtremesStyle: widget.visiblePriceExtremesStyle,
                   opacity: widget.opacity,
                   chartAxisConfig: widget.chartAxisConfig,
                   verticalPaddingFraction: widget.verticalPaddingFraction,
@@ -142,6 +144,7 @@ class _ChartStateMobile extends _ChartState {
                   showCurrentTickBlinkAnimation:
                       widget.showCurrentTickBlinkAnimation ?? true,
                   crosshairVariant: widget.crosshairVariant,
+                  crosshairDetailsBuilder: widget.crosshairDetailsBuilder,
                   interactiveLayerBehaviour: widget.interactiveLayerBehaviour,
                   useDrawingToolsV2: widget.useDrawingToolsV2,
                 ),

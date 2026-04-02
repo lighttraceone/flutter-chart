@@ -64,8 +64,7 @@ class BasicChart extends StatefulWidget {
 }
 
 /// The chart state to use and build other charts from it.
-class BasicChartState<T extends BasicChart> extends State<T>
-    with TickerProviderStateMixin {
+class BasicChartState<T extends BasicChart> extends State<T> with TickerProviderStateMixin {
   /// Width of the touch area for vertical zoom (on top of quote labels).
   double quoteLabelsTouchAreaWidth = 70;
 
@@ -122,8 +121,7 @@ class BasicChartState<T extends BasicChart> extends State<T>
     final double padding = verticalPaddingFraction * canvasSize!.height;
     final double paddingValue = padding;
     if (BasicChartState.minPadding < canvasSize!.height / 2) {
-      return paddingValue.clamp(
-          BasicChartState.minPadding, canvasSize!.height / 2);
+      return paddingValue.clamp(BasicChartState.minPadding, canvasSize!.height / 2);
     } else {
       return 0;
     }
@@ -211,8 +209,7 @@ class BasicChartState<T extends BasicChart> extends State<T>
             gridLineQuotes!.isEmpty ||
             newGridLineQuotes.first != gridLineQuotes!.first ||
             newGridLineQuotes.last != gridLineQuotes!.last)) {
-      widget.onQuoteAreaChanged
-          ?.call(newGridLineQuotes.first, newGridLineQuotes.last);
+      widget.onQuoteAreaChanged?.call(newGridLineQuotes.first, newGridLineQuotes.last);
     }
 
     gridLineQuotes = newGridLineQuotes;
@@ -303,8 +300,7 @@ class BasicChartState<T extends BasicChart> extends State<T>
 
   /// Updates the visible data to be shown inside the chart with updating the
   /// right bound and left bound epoch.
-  void updateVisibleData() =>
-      widget.mainSeries.update(xAxis.leftBoundEpoch, xAxis.rightBoundEpoch);
+  void updateVisibleData() => widget.mainSeries.update(xAxis.leftBoundEpoch, xAxis.rightBoundEpoch);
 
   /// Returns the charts min/max quotes.
   List<double> getSeriesMinMaxValue() =>
@@ -328,8 +324,7 @@ class BasicChartState<T extends BasicChart> extends State<T>
 
     // Snap bounds and skip tick animation when switching to a market with a
     // disjoint price range, to avoid a long vertical-line artifact.
-    final bool rangeDisjoint =
-        maxQuote < bottomBoundQuoteTarget || minQuote > topBoundQuoteTarget;
+    final bool rangeDisjoint = maxQuote < bottomBoundQuoteTarget || minQuote > topBoundQuoteTarget;
     if (rangeDisjoint) {
       bottomBoundQuoteTarget = minQuote;
       bottomBoundQuoteAnimationController.value = minQuote;
@@ -391,8 +386,7 @@ class BasicChartState<T extends BasicChart> extends State<T>
 
           final YAxisModel yAxisModel = _setupYAxisModel(canvasSize!);
 
-          final List<double> gridLineQuotes =
-              calculateGridLineQuotes(yAxisModel);
+          final List<double> gridLineQuotes = calculateGridLineQuotes(yAxisModel);
           return Stack(
             fit: StackFit.expand,
             children: <Widget>[
@@ -415,8 +409,8 @@ class BasicChartState<T extends BasicChart> extends State<T>
           )
         : 0;
 
-    YAxisConfig.instance.setLabelWidth(calculatedLabelWidth +
-        context.watch<ChartTheme>().gridStyle.labelHorizontalPadding * 2);
+    YAxisConfig.instance.setLabelWidth(
+        calculatedLabelWidth + context.watch<ChartTheme>().gridStyle.labelHorizontalPadding * 2);
 
     return MultipleAnimatedBuilder(
       animations: getQuoteGridAnimations(),
@@ -457,8 +451,7 @@ class BasicChartState<T extends BasicChart> extends State<T>
         currentTickAnimation,
       ];
 
-  Widget _buildQuoteGridLabel(List<double> gridLineQuotes) =>
-      MultipleAnimatedBuilder(
+  Widget _buildQuoteGridLabel(List<double> gridLineQuotes) => MultipleAnimatedBuilder(
         animations: getQuoteLabelAnimations(),
         builder: (BuildContext context, _) => RepaintBoundary(
           child: CustomPaint(
@@ -520,16 +513,14 @@ class BasicChartState<T extends BasicChart> extends State<T>
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
-    if (_panStartedOnQuoteLabelsArea &&
-        _onQuoteLabelsTouchArea(details.globalPosition)) {
+    if (_panStartedOnQuoteLabelsArea && _onQuoteLabelsTouchArea(details.globalPosition)) {
       _scaleVertically(details.delta.dy);
     }
   }
 
   void _updateChartPosition() =>
       WidgetsFlutterBinding.ensureInitialized().addPostFrameCallback((_) {
-        final RenderBox? box =
-            _key.currentContext?.findRenderObject() as RenderBox?;
+        final RenderBox? box = _key.currentContext?.findRenderObject() as RenderBox?;
         final Offset? position = box?.localToGlobal(Offset.zero);
         if (position != null && chartPosition != position) {
           chartPosition = Offset(position.dx, position.dy);
@@ -544,8 +535,7 @@ class BasicChartState<T extends BasicChart> extends State<T>
 
   void _scaleVertically(double dy) {
     setState(() {
-      verticalPaddingFraction =
-          ((verticalPadding + dy) / canvasSize!.height).clamp(0.05, 0.49);
+      verticalPaddingFraction = ((verticalPadding + dy) / canvasSize!.height).clamp(0.05, 0.49);
     });
     _onScaleYAxis();
   }

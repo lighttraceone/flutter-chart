@@ -7,6 +7,7 @@ import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshai
 import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshair_variant.dart';
 import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/large_screen_crosshair_line_painter.dart';
 import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/small_screen_crosshair_line_painter.dart';
+import 'package:deriv_chart/src/misc/callbacks.dart';
 import 'package:deriv_chart/src/models/tick.dart';
 import 'package:deriv_chart/src/theme/chart_theme.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +32,7 @@ class CrosshairArea extends StatelessWidget {
     required this.crosshairVariant,
     required this.isTickWithinDataRange,
     required this.updateAndFindClosestTick,
+    this.crosshairDetailsBuilder,
     this.pipSize = 4,
     Key? key,
   }) : super(key: key);
@@ -71,10 +73,13 @@ class CrosshairArea extends StatelessWidget {
 
   /// Function to update and find the closest tick based on cursor position.
   ///
-  /// Takes an optional [double] parameter representing the cursor X position.
+  /// Takes optional cursor X/Y positions.
   /// If no position is provided, it uses the last known long press position.
   /// Returns the closest [Tick] to the specified or default position, or null if none found.
-  final Tick? Function([double?]) updateAndFindClosestTick;
+  final Tick? Function([double?, double?]) updateAndFindClosestTick;
+
+  /// Builds custom crosshair details content.
+  final CrosshairDetailsBuilder? crosshairDetailsBuilder;
 
   /// Calculates the optimal vertical position for the crosshair details box.
   ///
@@ -118,7 +123,8 @@ class CrosshairArea extends StatelessWidget {
       Tick? updatedCrosshairTick = crosshairTick;
 
       if (cursorPosition.dx != 0) {
-        updatedCrosshairTick = updateAndFindClosestTick(cursorPosition.dx);
+        updatedCrosshairTick =
+            updateAndFindClosestTick(cursorPosition.dx, cursorPosition.dy);
       }
       return SizedBox(
         width: constraints.maxWidth,
@@ -144,24 +150,32 @@ class CrosshairArea extends StatelessWidget {
 
     final XAxisModel xAxis = context.watch<XAxisModel>();
     final ChartTheme theme = context.read<ChartTheme>();
+    final double smallScreenCursorY =
+        cursorPosition.dy.clamp(0.0, constraints.maxHeight).toDouble();
     return Stack(
       clipBehavior: Clip.none,
       children: <Widget>[
-        AnimatedPositioned(
-          duration: animationDuration,
-          left: xAxis.xFromEpoch(tick.epoch),
-          child: CustomPaint(
+        if (crosshairVariant == CrosshairVariant.smallScreen)
+          CustomPaint(
             size: Size(constraints.maxWidth, constraints.maxHeight),
-            painter: crosshairVariant == CrosshairVariant.smallScreen
-                ? SmallScreenCrosshairLinePainter(
-                    theme: theme,
-                  )
-                : LargeScreenCrosshairLinePainter(
-                    theme: theme,
-                    cursorY: cursorPosition.dy,
-                  ),
+            painter: SmallScreenCrosshairLinePainter(
+              theme: theme,
+              cursorX: xAxis.xFromEpoch(tick.epoch),
+              cursorY: smallScreenCursorY,
+            ),
+          )
+        else
+          AnimatedPositioned(
+            duration: animationDuration,
+            left: xAxis.xFromEpoch(tick.epoch),
+            child: CustomPaint(
+              size: Size(constraints.maxWidth, constraints.maxHeight),
+              painter: LargeScreenCrosshairLinePainter(
+                theme: theme,
+                cursorY: cursorPosition.dy,
+              ),
+            ),
           ),
-        ),
         AnimatedPositioned(
           top: quoteToCanvasY(tick.quote),
           left: xAxis.xFromEpoch(tick.epoch),
@@ -228,26 +242,78 @@ class CrosshairArea extends StatelessWidget {
     );
   }
 
-  AnimatedPositioned _buildCrosshairDetails(
+  Widget _buildCrosshairDetails(
       BoxConstraints constraints, XAxisModel xAxis, Tick? tick) {
+    if (crosshairVariant != CrosshairVariant.smallScreen) {
+      return AnimatedPositioned(
+        duration: animationDuration,
+        top: _calculateDetailsPosition(cursorY: cursorPosition.dy, tick: tick!),
+        bottom: 0,
+        width: constraints.maxWidth,
+        left: xAxis.xFromEpoch(tick.epoch) - constraints.maxWidth / 2,
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: CrosshairDetails(
+            mainSeries: mainSeries,
+            crosshairTick: tick,
+            pipSize: pipSize,
+            crosshairVariant: crosshairVariant,
+            builder: crosshairDetailsBuilder,
+          ),
+        ),
+      );
+    }
+
+    const double margin = 8;
+    const double horizontalGap = 12;
+    const double verticalGap = 12;
+    const double estimatedDetailsHeight = 168;
+
+    final double cursorX = xAxis.xFromEpoch(tick!.epoch);
+    final double cursorY = cursorPosition.dy.clamp(0.0, constraints.maxHeight);
+    final bool placeDetailsOnLeft = cursorX > constraints.maxWidth / 2;
+    final bool placeDetailsBelow =
+        cursorY < constraints.maxHeight / 2 ||
+            constraints.maxHeight - cursorY >=
+                estimatedDetailsHeight + verticalGap + margin;
+
+    final double top = placeDetailsBelow
+        ? min(
+            constraints.maxHeight - estimatedDetailsHeight - margin,
+            cursorY + verticalGap,
+          )
+        : max(
+            margin,
+            cursorY - estimatedDetailsHeight - verticalGap,
+          );
+
+    final double? left = placeDetailsOnLeft
+        ? null
+        : (cursorX + horizontalGap)
+            .clamp(margin, constraints.maxWidth - margin)
+            .toDouble();
+    final double? right = placeDetailsOnLeft
+        ? (constraints.maxWidth - cursorX + horizontalGap)
+            .clamp(margin, constraints.maxWidth - margin)
+            .toDouble()
+        : null;
+    final double availableWidth = placeDetailsOnLeft
+        ? max(0, cursorX - horizontalGap - margin)
+        : max(0, constraints.maxWidth - (left ?? margin) - margin);
+
     return AnimatedPositioned(
       duration: animationDuration,
-      // Position the details above the cursor with a gap
-      // Use cursorY which is the cursor's Y position
-      // Subtract the height of the details box plus a gap
-      top: crosshairVariant == CrosshairVariant.smallScreen
-          ? 8
-          : _calculateDetailsPosition(cursorY: cursorPosition.dy, tick: tick!),
-      bottom: 0,
-      width: constraints.maxWidth,
-      left: xAxis.xFromEpoch(tick!.epoch) - constraints.maxWidth / 2,
-      child: Align(
-        alignment: Alignment.topCenter,
+      top: top,
+      left: left,
+      right: right,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: availableWidth),
         child: CrosshairDetails(
           mainSeries: mainSeries,
           crosshairTick: tick,
           pipSize: pipSize,
           crosshairVariant: crosshairVariant,
+          builder: crosshairDetailsBuilder,
         ),
       ),
     );

@@ -16,6 +16,7 @@ import 'package:deriv_chart/src/deriv_chart/interactive_layer/helpers/types.dart
 import 'package:deriv_chart/src/deriv_chart/interactive_layer/interactive_layer_states/interactive_selected_tool_state.dart';
 import 'package:deriv_chart/src/models/axis_range.dart';
 import 'package:deriv_chart/src/models/chart_config.dart';
+import 'package:deriv_chart/src/misc/callbacks.dart';
 import 'package:deriv_chart/src/theme/chart_theme.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -70,6 +71,7 @@ class InteractiveLayer extends StatefulWidget {
     required this.crosshairZoomOutAnimation,
     required this.crosshairController,
     required this.crosshairVariant,
+    this.crosshairDetailsBuilder,
     this.showCrosshair = true,
     this.pipSize = 4,
     this.onCrosshairAppeared,
@@ -131,6 +133,9 @@ class InteractiveLayer extends StatefulWidget {
   /// The default is [CrosshairVariant.smallScreen].
   /// [CrosshairVariant.largeScreen] is mostly for web.
   final CrosshairVariant crosshairVariant;
+
+  /// Builds custom crosshair details content.
+  final CrosshairDetailsBuilder? crosshairDetailsBuilder;
 
   @override
   State<InteractiveLayer> createState() => _InteractiveLayerState();
@@ -269,6 +274,7 @@ class _InteractiveLayerState extends State<InteractiveLayer> {
       onCrosshairDisappeared: widget.onCrosshairDisappeared,
       crosshairController: widget.crosshairController,
       crosshairVariant: widget.crosshairVariant,
+      crosshairDetailsBuilder: widget.crosshairDetailsBuilder,
     );
   }
 }
@@ -289,6 +295,7 @@ class _InteractiveLayerGestureHandler extends StatefulWidget {
     required this.crosshairZoomOutAnimation,
     required this.crosshairController,
     required this.crosshairVariant,
+    this.crosshairDetailsBuilder,
     this.addingDrawingTool,
     this.onSaveDrawingChange,
     this.onRemoveDrawing,
@@ -347,6 +354,9 @@ class _InteractiveLayerGestureHandler extends StatefulWidget {
   /// The default is [CrosshairVariant.smallScreen].
   /// [CrosshairVariant.largeScreen] is mostly for web.
   final CrosshairVariant crosshairVariant;
+
+  /// Builds custom crosshair details content.
+  final CrosshairDetailsBuilder? crosshairDetailsBuilder;
 
   @override
   State<_InteractiveLayerGestureHandler> createState() =>
@@ -607,6 +617,8 @@ class _InteractiveLayerGestureHandlerState
                           crosshairZoomOutAnimation:
                               widget.crosshairZoomOutAnimation,
                           crosshairVariant: widget.crosshairVariant,
+                          crosshairDetailsBuilder:
+                              widget.crosshairDetailsBuilder,
                           showCrosshair: widget.showCrosshair,
                         ),
                         ...widget.interactiveLayerBehaviour.previewWidgets,

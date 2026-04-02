@@ -6,11 +6,15 @@ abstract class CrosshairLinePainter extends CustomPainter {
   /// Initializes a custom painter to paint the crosshair `line`.
   const CrosshairLinePainter({
     required this.theme,
+    this.cursorX = 0,
     this.cursorY = 0,
   });
 
   /// The theme used to paint the crosshair line.
   final ChartTheme theme;
+
+  /// The x position of the crosshair.
+  final double cursorX;
 
   /// The quote value of the crosshair.
   /// This is used to determine the position of the crosshair horizontal line on large screens.

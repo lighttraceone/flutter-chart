@@ -150,6 +150,9 @@ class XAxisModel extends ChangeNotifier {
   double? get rightPadding =>
       width != null && graphAreaWidth != null ? width! - graphAreaWidth! : null;
 
+  /// Width of the actual chart plotting area, excluding the Y-axis labels area.
+  double get _drawableWidth => graphAreaWidth ?? width ?? 0;
+
   /// Called on scale.
   final VoidCallback? onScale;
 
@@ -183,7 +186,7 @@ class XAxisModel extends ChangeNotifier {
   set isScrollBlocked(bool value) => _isScrollBlocked = value;
 
   /// Epoch value of the leftmost chart's edge.
-  int get leftBoundEpoch => _shiftEpoch(rightBoundEpoch, -width!);
+  int get leftBoundEpoch => _shiftEpoch(rightBoundEpoch, -_drawableWidth);
 
   /// Epoch value of the rightmost chart's edge. Including quote labels area.
   int get rightBoundEpoch => _rightBoundEpoch;
@@ -376,7 +379,8 @@ class XAxisModel extends ChangeNotifier {
       // `entries.length * granularity` gives ms duration with market gaps
       // excluded.
       final int msDataDuration = _entries!.length * granularity;
-      final double pxTargetDataWidth = width! - _dataFitPadding.horizontal;
+      final double pxTargetDataWidth =
+          _drawableWidth - _dataFitPadding.horizontal;
 
       _msPerPx =
           (msDataDuration / pxTargetDataWidth).clamp(_minMsPerPx, _maxMsPerPx);
@@ -444,9 +448,9 @@ class XAxisModel extends ChangeNotifier {
   /// Get x position of epoch.
   double xFromEpoch(int epoch) {
     if (epoch <= rightBoundEpoch) {
-      return width! - pxBetween(epoch, rightBoundEpoch);
+      return _drawableWidth - pxBetween(epoch, rightBoundEpoch);
     } else {
-      return width! + pxBetween(rightBoundEpoch, epoch);
+      return _drawableWidth + pxBetween(rightBoundEpoch, epoch);
     }
   }
 
@@ -466,7 +470,8 @@ class XAxisModel extends ChangeNotifier {
   }
 
   /// Get epoch of x position.
-  int epochFromX(double x) => _shiftEpoch(rightBoundEpoch, -width! + x);
+  int epochFromX(double x) =>
+      _shiftEpoch(rightBoundEpoch, -_drawableWidth + x.clamp(0, _drawableWidth));
 
   /// Called at the start of scale and pan gestures.
   void onScaleAndPanStart(ScaleStartDetails details) {
@@ -524,7 +529,8 @@ class XAxisModel extends ChangeNotifier {
   }
 
   void _scaleWithFocalPointFixed(ScaleUpdateDetails details) {
-    final double focalToRightBound = width! - details.focalPoint.dx;
+    final double focalToRightBound =
+        _drawableWidth - details.focalPoint.dx.clamp(0, _drawableWidth);
     final int focalEpoch = _shiftEpoch(rightBoundEpoch, -focalToRightBound);
     scale(details.scale);
     _rightBoundEpoch = _shiftEpoch(focalEpoch, focalToRightBound);

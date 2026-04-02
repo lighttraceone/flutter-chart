@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:collection/collection.dart' show IterableExtension;
 import 'package:deriv_chart/src/add_ons/drawing_tools_ui/drawing_tool_config.dart';
 import 'package:deriv_chart/src/add_ons/repository.dart';
@@ -7,6 +9,7 @@ import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshai
 import 'package:deriv_chart/src/misc/chart_controller.dart';
 import 'package:deriv_chart/src/models/axis_range.dart';
 import 'package:deriv_chart/src/models/chart_axis_config.dart';
+import 'package:deriv_chart/src/models/candle.dart';
 import 'package:deriv_chart/src/models/tick.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/custom_painters/chart_data_painter.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/custom_painters/chart_painter.dart';
@@ -30,8 +33,10 @@ import 'data_visualization/markers/marker_series.dart';
 import 'data_visualization/models/animation_info.dart';
 import 'data_visualization/models/chart_object.dart';
 import 'helpers/functions/helper_functions.dart';
+import 'helpers/paint_functions/paint_line.dart';
 import '../../misc/callbacks.dart';
 import '../../theme/chart_theme.dart';
+import '../../theme/painting_styles/visible_price_extremes_style.dart';
 import 'package:deriv_chart/src/deriv_chart/drawing_tool_chart/drawing_tools.dart';
 
 import 'y_axis/quote_grid.dart';
@@ -50,6 +55,8 @@ class MainChart extends BasicChart {
     this.showLoadingAnimationForHistoricalData = true,
     this.showDataFitButton = false,
     this.showScrollToLastTickButton = true,
+    this.showVisiblePriceExtremes = false,
+    this.visiblePriceExtremesStyle,
     this.markerSeries,
     this.controller,
     this.onCrosshairAppeared,
@@ -58,6 +65,7 @@ class MainChart extends BasicChart {
     this.overlaySeries,
     this.annotations,
     this.verticalPaddingFraction,
+    this.crosshairDetailsBuilder,
     this.loadingAnimationColor,
     this.showCurrentTickBlinkAnimation = true,
     super.currentTickAnimationDuration,
@@ -123,6 +131,12 @@ class MainChart extends BasicChart {
   /// Whether to show the scroll to last tick button or not.
   final bool showScrollToLastTickButton;
 
+  /// Whether to show highest/lowest visible price markers on the main chart.
+  final bool showVisiblePriceExtremes;
+
+  /// Style config for highest/lowest visible price markers on the main chart.
+  final VisiblePriceExtremesStyle? visiblePriceExtremesStyle;
+
   /// Convenience list to access all chart data.
   final List<ChartData> chartDataList;
 
@@ -132,6 +146,9 @@ class MainChart extends BasicChart {
   /// Fraction of the chart's height taken by top or bottom padding.
   /// Quote scaling (drag on quote area) is controlled by this variable.
   final double? verticalPaddingFraction;
+
+  /// Builds custom crosshair details content.
+  final CrosshairDetailsBuilder? crosshairDetailsBuilder;
 
   /// The color of the loading animation.
   final Color? loadingAnimationColor;
@@ -185,13 +202,8 @@ class _ChartImplementationState extends BasicChartState<MainChart> {
     }
 
     final double padding = verticalPaddingFraction * canvasSize!.height;
-    const double minCrosshairPadding = 80;
-    final double paddingValue = padding +
-        (minCrosshairPadding - padding).clamp(0, minCrosshairPadding) *
-            crosshairZoomOutAnimation.value;
     if (BasicChartState.minPadding < canvasSize!.height / 2) {
-      return paddingValue.clamp(
-          BasicChartState.minPadding, canvasSize!.height / 2);
+      return padding.clamp(BasicChartState.minPadding, canvasSize!.height / 2);
     } else {
       return 0;
     }
@@ -220,8 +232,7 @@ class _ChartImplementationState extends BasicChartState<MainChart> {
     didUpdateChartData(oldChart);
 
     if (widget.isLive != oldChart.isLive ||
-        widget.showCurrentTickBlinkAnimation !=
-            oldChart.showCurrentTickBlinkAnimation) {
+        widget.showCurrentTickBlinkAnimation != oldChart.showCurrentTickBlinkAnimation) {
       _updateBlinkingAnimationStatus();
     }
 
@@ -340,8 +351,7 @@ class _ChartImplementationState extends BasicChartState<MainChart> {
     };
 
     widget.controller?.getXFromEpoch = (int epoch) => xAxis.xFromEpoch(epoch);
-    widget.controller?.getYFromQuote =
-        (double quote) => chartQuoteToCanvasY(quote);
+    widget.controller?.getYFromQuote = (double quote) => chartQuoteToCanvasY(quote);
 
     widget.controller?.getEpochFromX = (double x) => xAxis.epochFromX(x);
     widget.controller?.getQuoteFromY = (double y) => chartQuoteFromCanvasY(y);
@@ -359,18 +369,6 @@ class _ChartImplementationState extends BasicChartState<MainChart> {
       curve: Curves.easeInOut,
     );
   }
-
-  @override
-  List<Listenable> getQuoteGridAnimations() =>
-      super.getQuoteGridAnimations()..add(crosshairZoomOutAnimation);
-
-  @override
-  List<Listenable> getQuoteLabelAnimations() =>
-      super.getQuoteLabelAnimations()..add(crosshairZoomOutAnimation);
-
-  @override
-  List<Listenable> getChartDataAnimations() =>
-      super.getChartDataAnimations()..add(crosshairZoomOutAnimation);
 
   void _setupBlinkingAnimation() {
     _currentTickBlinkingController = AnimationController(
@@ -417,30 +415,26 @@ class _ChartImplementationState extends BasicChartState<MainChart> {
             child: Stack(
               fit: StackFit.expand,
               children: <Widget>[
-                // _buildQuoteGridLine(gridLineQuotes),
-
                 if (widget.showLoadingAnimationForHistoricalData ||
                     (widget._mainSeries.entries?.isEmpty ?? false))
                   _buildLoadingAnimation(),
-                // _buildQuoteGridLabel(gridLineQuotes),
                 super.build(context),
-                if (widget.overlaySeries != null)
-                  _buildSeries(widget.overlaySeries!),
+                if (widget.overlaySeries != null) _buildSeries(widget.overlaySeries!),
                 if (widget.markerSeries != null) _buildMarkerArea(),
+                if (widget.showVisiblePriceExtremes) _buildVisiblePriceExtremes(context, xAxis),
                 _buildAnnotations(),
-                if (widget.drawingTools != null && widget.useDrawingToolsV2)
-                  _buildInteractiveLayer(context, xAxis)
-                else if (widget.drawingTools != null)
+                if (widget.drawingTools != null && !widget.useDrawingToolsV2)
                   _buildDrawingToolChart(widget.drawingTools!),
-                if (widget.showScrollToLastTickButton &&
-                    _isScrollToLastTickAvailable)
+                if (widget.drawingTools != null &&
+                    (widget.useDrawingToolsV2 || widget.showCrosshair))
+                  _buildInteractiveLayer(context, xAxis),
+                if (widget.showScrollToLastTickButton && _isScrollToLastTickAvailable)
                   Positioned(
                     bottom: 0,
                     right: quoteLabelsTouchAreaWidth,
                     child: _buildScrollToLastTickButton(),
                   ),
-                if (widget.showDataFitButton &&
-                    (widget._mainSeries.entries?.isNotEmpty ?? false))
+                if (widget.showDataFitButton && (widget._mainSeries.entries?.isNotEmpty ?? false))
                   Positioned(
                     bottom: 0,
                     left: 0,
@@ -452,9 +446,180 @@ class _ChartImplementationState extends BasicChartState<MainChart> {
         },
       );
 
+  Widget _buildVisiblePriceExtremes(
+    BuildContext context,
+    XAxisModel xAxis,
+  ) {
+    final List<Tick> visibleEntries =
+        (widget.mainSeries as DataSeries<Tick>).visibleEntries.entries;
+    if (visibleEntries.isEmpty || visibleEntries.first is! Candle) {
+      return const SizedBox.shrink();
+    }
+
+    Candle? highest;
+    Candle? lowest;
+
+    for (final Tick tick in visibleEntries) {
+      if (tick is! Candle) {
+        continue;
+      }
+
+      if (highest == null || tick.high > highest.high) {
+        highest = tick;
+      }
+      if (lowest == null || tick.low < lowest.low) {
+        lowest = tick;
+      }
+    }
+
+    if (highest == null && lowest == null) {
+      return const SizedBox.shrink();
+    }
+
+    return MultipleAnimatedBuilder(
+      animations: <Listenable>[
+        topBoundQuoteAnimationController,
+        bottomBoundQuoteAnimationController,
+        _yAxisNotifier,
+      ],
+      builder: (BuildContext context, _) {
+        final double plotWidth = xAxis.graphAreaWidth ?? xAxis.width ?? 0;
+        if (plotWidth <= 0) {
+          return const SizedBox.shrink();
+        }
+
+        return LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            final double constrainedPlotWidth = min(plotWidth, constraints.maxWidth);
+
+            return IgnorePointer(
+              child: Stack(
+                children: <Widget>[
+                  if (highest != null)
+                    _buildVisiblePriceMarker(
+                      context,
+                      candle: highest,
+                      price: highest.high,
+                      isHigh: true,
+                      plotWidth: constrainedPlotWidth,
+                      maxHeight: constraints.maxHeight,
+                    ),
+                  if (lowest != null)
+                    _buildVisiblePriceMarker(
+                      context,
+                      candle: lowest,
+                      price: lowest.low,
+                      isHigh: false,
+                      plotWidth: constrainedPlotWidth,
+                      maxHeight: constraints.maxHeight,
+                    ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildVisiblePriceMarker(
+    BuildContext context, {
+    required Candle candle,
+    required double price,
+    required bool isHigh,
+    required double plotWidth,
+    required double maxHeight,
+  }) {
+    final _ResolvedVisiblePriceExtremesStyle style = _resolveVisiblePriceExtremesStyle(context);
+    final double x = xAxis.xFromEpoch(candle.epoch);
+    final double y = chartQuoteToCanvasY(price);
+    const double minTop = 2;
+    final String valueText = price.toStringAsFixed(widget.pipSize);
+    final TextPainter textPainter = TextPainter(
+      text: TextSpan(text: valueText, style: style.textStyle),
+      textDirection: Directionality.of(context),
+      maxLines: 1,
+    )..layout();
+    final double labelWidth = textPainter.width + style.padding.horizontal;
+    final double markerHeight = max(textPainter.height + style.padding.vertical, 20);
+    final double totalWidth = style.guideLineLength + style.labelSpacing + labelWidth;
+    final bool canPlaceRight = x + totalWidth <= plotWidth;
+    final bool canPlaceLeft = x - totalWidth >= 0;
+    final bool placeRight = canPlaceRight || (!canPlaceLeft && x <= plotWidth / 2);
+    final double left = placeRight
+        ? x.clamp(0.0, max(plotWidth - totalWidth, 0.0)).toDouble()
+        : max(0, x - totalWidth).toDouble();
+    final double top = (isHigh ? y - style.highPriceTopOffset : y - style.lowPriceTopOffset)
+        .clamp(minTop, max(maxHeight - markerHeight, minTop))
+        .toDouble();
+
+    return Positioned(
+      left: left,
+      top: top,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: placeRight
+            ? <Widget>[
+                _VisiblePriceExtremesGuideLine(style: style),
+                SizedBox(width: style.labelSpacing),
+                _buildVisiblePriceLabel(valueText, style),
+              ]
+            : <Widget>[
+                _buildVisiblePriceLabel(valueText, style),
+                SizedBox(width: style.labelSpacing),
+                _VisiblePriceExtremesGuideLine(style: style),
+              ],
+      ),
+    );
+  }
+
+  Widget _buildVisiblePriceLabel(
+    String value,
+    _ResolvedVisiblePriceExtremesStyle style,
+  ) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: style.backgroundColor,
+        borderRadius: style.borderRadius,
+      ),
+      child: Padding(
+        padding: style.padding,
+        child: Text(
+          value,
+          style: style.textStyle,
+        ),
+      ),
+    );
+  }
+
+  _ResolvedVisiblePriceExtremesStyle _resolveVisiblePriceExtremesStyle(
+    BuildContext context,
+  ) {
+    final ChartTheme theme = context.watch<ChartTheme>();
+    final VisiblePriceExtremesStyle style =
+        widget.visiblePriceExtremesStyle ?? const VisiblePriceExtremesStyle();
+
+    return _ResolvedVisiblePriceExtremesStyle(
+      textStyle: style.textStyle ??
+          theme.gridTextStyle.copyWith(
+            color: theme.gridTextColor,
+          ),
+      backgroundColor: style.backgroundColor ?? theme.backgroundColor.withValues(alpha: 0.92),
+      guideLineColor: style.guideLineColor ?? theme.gridTextColor,
+      padding: style.padding,
+      borderRadius: style.borderRadius,
+      guideLineLength: style.guideLineLength,
+      guideLineThickness: style.guideLineThickness,
+      dashWidth: style.dashWidth,
+      dashSpace: style.dashSpace,
+      labelSpacing: style.labelSpacing,
+      highPriceTopOffset: style.highPriceTopOffset,
+      lowPriceTopOffset: style.lowPriceTopOffset,
+    );
+  }
+
   // ignore: unused_element
-  Widget _buildInteractiveLayer(BuildContext context, XAxisModel xAxis) =>
-      MultipleAnimatedBuilder(
+  Widget _buildInteractiveLayer(BuildContext context, XAxisModel xAxis) => MultipleAnimatedBuilder(
         animations: [
           topBoundQuoteAnimationController,
           bottomBoundQuoteAnimationController,
@@ -472,21 +637,20 @@ class _ChartImplementationState extends BasicChartState<MainChart> {
             epochFromCanvasX: xAxis.epochFromX,
             quoteRange: QuoteRange(
               topQuote: chartQuoteFromCanvasY(0),
-              bottomQuote:
-                  chartQuoteFromCanvasY(_yAxisNotifier.value.canvasHeight),
+              bottomQuote: chartQuoteFromCanvasY(_yAxisNotifier.value.canvasHeight),
             ),
             interactiveLayerBehaviour: _interactiveLayerBehaviour,
             crosshairController: crosshairController,
             crosshairVariant: widget.crosshairVariant,
             crosshairZoomOutAnimation: crosshairZoomOutAnimation,
             pipSize: widget.pipSize,
+            crosshairDetailsBuilder: widget.crosshairDetailsBuilder,
           );
         },
       );
 
   // ignore: unused_element
-  Widget _buildDrawingToolChart(DrawingTools drawingTools) =>
-      MultipleAnimatedBuilder(
+  Widget _buildDrawingToolChart(DrawingTools drawingTools) => MultipleAnimatedBuilder(
         animations: <Listenable>[
           topBoundQuoteAnimationController,
           bottomBoundQuoteAnimationController,
@@ -513,8 +677,7 @@ class _ChartImplementationState extends BasicChartState<MainChart> {
           topBoundQuoteAnimationController,
           bottomBoundQuoteAnimationController,
         ],
-        builder: (BuildContext context, _) =>
-            Stack(fit: StackFit.expand, children: <Widget>[
+        builder: (BuildContext context, _) => Stack(fit: StackFit.expand, children: <Widget>[
           if (widget.annotations != null)
             ...widget.annotations!
                 .map(
@@ -616,5 +779,81 @@ class _ChartImplementationState extends BasicChartState<MainChart> {
     minQuote = safeMin(minQuote, widget.chartDataList.getMinValue());
     maxQuote = safeMax(maxQuote, widget.chartDataList.getMaxValue());
     return <double>[minQuote, maxQuote];
+  }
+}
+
+class _ResolvedVisiblePriceExtremesStyle {
+  const _ResolvedVisiblePriceExtremesStyle({
+    required this.textStyle,
+    required this.backgroundColor,
+    required this.guideLineColor,
+    required this.padding,
+    required this.borderRadius,
+    required this.guideLineLength,
+    required this.guideLineThickness,
+    required this.dashWidth,
+    required this.dashSpace,
+    required this.labelSpacing,
+    required this.highPriceTopOffset,
+    required this.lowPriceTopOffset,
+  });
+
+  final TextStyle textStyle;
+  final Color backgroundColor;
+  final Color guideLineColor;
+  final EdgeInsets padding;
+  final BorderRadius borderRadius;
+  final double guideLineLength;
+  final double guideLineThickness;
+  final double dashWidth;
+  final double dashSpace;
+  final double labelSpacing;
+  final double highPriceTopOffset;
+  final double lowPriceTopOffset;
+}
+
+class _VisiblePriceExtremesGuideLine extends StatelessWidget {
+  const _VisiblePriceExtremesGuideLine({
+    required this.style,
+  });
+
+  final _ResolvedVisiblePriceExtremesStyle style;
+
+  @override
+  Widget build(BuildContext context) {
+    final double height = max(
+      style.textStyle.fontSize ?? 12,
+      style.guideLineThickness,
+    );
+
+    return CustomPaint(
+      size: Size(style.guideLineLength, height),
+      painter: _VisiblePriceExtremesGuideLinePainter(style),
+    );
+  }
+}
+
+class _VisiblePriceExtremesGuideLinePainter extends CustomPainter {
+  const _VisiblePriceExtremesGuideLinePainter(this.style);
+
+  final _ResolvedVisiblePriceExtremesStyle style;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    paintHorizontalDashedLine(
+      canvas,
+      0,
+      size.width,
+      size.height / 2,
+      style.guideLineColor,
+      style.guideLineThickness,
+      dashWidth: style.dashWidth,
+      dashSpace: style.dashSpace,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _VisiblePriceExtremesGuideLinePainter oldDelegate) {
+    return oldDelegate.style != style;
   }
 }

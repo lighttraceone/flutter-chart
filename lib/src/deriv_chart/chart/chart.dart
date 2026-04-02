@@ -22,6 +22,7 @@ import '../../misc/chart_controller.dart';
 import '../../models/tick.dart';
 import '../../theme/chart_default_dark_theme.dart';
 import '../../theme/chart_theme.dart';
+import '../../theme/painting_styles/visible_price_extremes_style.dart';
 import '../interactive_layer/interactive_layer_behaviours/interactive_layer_behaviour.dart';
 import 'bottom_chart.dart';
 import 'bottom_chart_mobile.dart';
@@ -78,6 +79,9 @@ class Chart extends StatefulWidget {
     this.showDataFitButton,
     this.showScrollToLastTickButton,
     this.showOverlayIndicatorLabels = true,
+    this.showVisiblePriceExtremes = false,
+    this.visiblePriceExtremesStyle,
+    this.crosshairDetailsBuilder,
     this.loadingAnimationColor,
     this.useDrawingToolsV2 = false,
     Key? key,
@@ -190,6 +194,15 @@ class Chart extends StatefulWidget {
 
   /// Whether to show overlay indicator labels on the top-left of the main chart.
   final bool showOverlayIndicatorLabels;
+
+  /// Whether to show highest/lowest visible price markers on the main chart.
+  final bool showVisiblePriceExtremes;
+
+  /// Style config for highest/lowest visible price markers on the main chart.
+  final VisiblePriceExtremesStyle? visiblePriceExtremesStyle;
+
+  /// Builds custom crosshair details content.
+  final CrosshairDetailsBuilder? crosshairDetailsBuilder;
 
   /// The color of the loading animation.
   final Color? loadingAnimationColor;

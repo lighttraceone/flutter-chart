@@ -1,6 +1,7 @@
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/chart_series/data_series.dart';
 import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshair_area.dart';
 import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshair_variant.dart';
+import 'package:deriv_chart/src/misc/callbacks.dart';
 import 'package:deriv_chart/src/models/tick.dart';
 import 'package:flutter/material.dart';
 import 'crosshair_controller.dart';
@@ -16,6 +17,7 @@ class CrosshairWidget extends StatelessWidget {
     required this.crosshairController,
     required this.crosshairZoomOutAnimation,
     required this.crosshairVariant,
+    this.crosshairDetailsBuilder,
     this.showCrosshair = true,
     super.key,
   });
@@ -43,6 +45,9 @@ class CrosshairWidget extends StatelessWidget {
   /// The default is [CrosshairVariant.smallScreen].
   /// [CrosshairVariant.largeScreen] is mostly for web.
   final CrosshairVariant crosshairVariant;
+
+  /// Builds custom crosshair details content.
+  final CrosshairDetailsBuilder? crosshairDetailsBuilder;
 
   /// Whether to show the crosshair or not.
   final bool showCrosshair;
@@ -78,6 +83,7 @@ class CrosshairWidget extends StatelessWidget {
                   animationDuration: crosshairController.animationDuration,
                   crosshairVariant: crosshairVariant,
                   isTickWithinDataRange: state.isTickWithinDataRange,
+                  crosshairDetailsBuilder: crosshairDetailsBuilder,
                   updateAndFindClosestTick:
                       crosshairController.updateAndFindClosestTick,
                 ),

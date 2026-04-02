@@ -4,6 +4,7 @@ import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/crosshai
 import 'package:deriv_chart/src/deriv_chart/interactive_layer/crosshair/find.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/data_visualization/chart_series/data_series.dart';
 import 'package:deriv_chart/src/deriv_chart/chart/helpers/chart_date_utils.dart';
+import 'package:deriv_chart/src/misc/callbacks.dart';
 import 'package:deriv_chart/src/models/tick.dart';
 import 'package:deriv_chart/src/theme/chart_theme.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +18,7 @@ class CrosshairDetails extends StatelessWidget {
     required this.mainSeries,
     required this.crosshairTick,
     required this.crosshairVariant,
+    this.builder,
     this.pipSize = 4,
     Key? key,
   }) : super(key: key);
@@ -30,6 +32,9 @@ class CrosshairDetails extends StatelessWidget {
   /// Number of decimal digits when showing prices.
   final int pipSize;
 
+  /// Builds custom crosshair details content.
+  final CrosshairDetailsBuilder? builder;
+
   /// The variant of the crosshair to be used.
   /// This is used to determine the type of crosshair to display.
   /// The default is [CrosshairVariant.smallScreen].
@@ -38,6 +43,18 @@ class CrosshairDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (builder != null) {
+      return builder!(
+        context,
+        CrosshairDetailsData(
+          mainSeries: mainSeries,
+          crosshairTick: crosshairTick,
+          pipSize: pipSize,
+          crosshairVariant: crosshairVariant,
+        ),
+      );
+    }
+
     final ChartTheme theme = context.watch<ChartTheme>();
     return ClipRRect(
       borderRadius: const BorderRadius.all(Radius.circular(8)),

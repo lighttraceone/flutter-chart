@@ -186,7 +186,10 @@ class CrosshairController extends ValueNotifier<CrosshairState> {
 
     final double x = details.localPosition.dx;
     final int epoch = xAxisModel.epochFromX(x);
-    final Tick? tick = _findClosestTick(epoch);
+    final Tick? tick = _findTickForCrosshair(
+      epoch: epoch,
+      y: details.localPosition.dy,
+    );
 
     if (tick != null) {
       _showCrosshair(tick, details.localPosition);
@@ -206,7 +209,10 @@ class CrosshairController extends ValueNotifier<CrosshairState> {
 
       _updatePanSpeed(_lastLongPressPosition!);
 
-      final Tick? tick = updateAndFindClosestTick();
+      final Tick? tick = updateAndFindClosestTick(
+        details.localPosition.dx,
+        details.localPosition.dy,
+      );
       if (tick != null) {
         _showCrosshair(tick, details.localPosition);
       }
@@ -299,16 +305,14 @@ class CrosshairController extends ValueNotifier<CrosshairState> {
   }
 
   /// Gets the closest tick based on the current position with position clamping and epoch tracking.
-  Tick? updateAndFindClosestTick([double? cursorX]) {
+  Tick? updateAndFindClosestTick([double? cursorX, double? cursorY]) {
     final double? _targetPosition = cursorX ?? _lastLongPressPosition;
     if (_targetPosition == null) {
       return null;
     }
 
-    // Clamp the position to stay within close distance boundaries
-    // This prevents the crosshair from getting too close to the chart edges
-    final double clampedPosition = _targetPosition.clamp(
-        _closeDistance, xAxisModel.width! - _closeDistance);
+    final double clampedPosition =
+        _targetPosition.clamp(0.0, xAxisModel.width!).toDouble();
 
     // Convert the clamped position to epoch time
     final int newLongPressEpoch = xAxisModel.epochFromX(clampedPosition);
@@ -320,7 +324,10 @@ class CrosshairController extends ValueNotifier<CrosshairState> {
     }
 
     // Find and return the closest tick for the current epoch
-    return _findTickForCrosshair(epoch: _lastLongPressPositionEpoch);
+    return _findTickForCrosshair(
+      epoch: _lastLongPressPositionEpoch,
+      y: cursorY ?? value.cursorPosition.dy,
+    );
   }
 
   /// Finds the appropriate tick for crosshair display based on cursor position.
@@ -335,7 +342,7 @@ class CrosshairController extends ValueNotifier<CrosshairState> {
 
     // Check if cursor is within the data range
     final bool isWithinDataRange = _isCursorWithinDataRange(epoch, entries);
-    if (isWithinDataRange || crosshairVariant == CrosshairVariant.smallScreen) {
+    if (isWithinDataRange) {
       // Within data range: snap to closest tick
       return _findClosestTick(epoch);
     } else {

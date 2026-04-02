@@ -16,6 +16,7 @@ import 'package:deriv_chart/src/misc/chart_controller.dart';
 import 'package:deriv_chart/src/models/chart_axis_config.dart';
 import 'package:deriv_chart/src/models/tick.dart';
 import 'package:deriv_chart/src/theme/chart_theme.dart';
+import 'package:deriv_chart/src/theme/painting_styles/visible_price_extremes_style.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -62,6 +63,10 @@ class DerivChart extends StatefulWidget {
     this.bottomChartTitleMargin,
     this.showDataFitButton,
     this.showScrollToLastTickButton,
+    this.showVisiblePriceExtremes = false,
+    this.visiblePriceExtremesStyle,
+    this.showDrawingToolsIcon = true,
+    this.crosshairDetailsBuilder,
     this.loadingAnimationColor,
     this.crosshairVariant = CrosshairVariant.smallScreen,
     this.interactiveLayerBehaviour,
@@ -164,6 +169,18 @@ class DerivChart extends StatefulWidget {
 
   /// Whether to show the scroll to last tick button or not.
   final bool? showScrollToLastTickButton;
+
+  /// Whether to show highest/lowest visible price markers on the main chart.
+  final bool showVisiblePriceExtremes;
+
+  /// Style config for highest/lowest visible price markers on the main chart.
+  final VisiblePriceExtremesStyle? visiblePriceExtremesStyle;
+
+  /// Whether to show the built-in drawing tools icon.
+  final bool showDrawingToolsIcon;
+
+  /// Builds custom crosshair details content.
+  final CrosshairDetailsBuilder? crosshairDetailsBuilder;
 
   /// The color of the loading animation.
   final Color? loadingAnimationColor;
@@ -297,6 +314,9 @@ class _DerivChartState extends State<DerivChart> {
                 bottomChartTitleMargin: widget.bottomChartTitleMargin,
                 showDataFitButton: widget.showDataFitButton,
                 showScrollToLastTickButton: widget.showScrollToLastTickButton,
+                showVisiblePriceExtremes: widget.showVisiblePriceExtremes,
+                visiblePriceExtremesStyle: widget.visiblePriceExtremesStyle,
+                crosshairDetailsBuilder: widget.crosshairDetailsBuilder,
                 loadingAnimationColor: widget.loadingAnimationColor,
                 chartAxisConfig: widget.chartAxisConfig,
                 crosshairVariant: widget.crosshairVariant,
