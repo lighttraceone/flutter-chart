@@ -39,6 +39,7 @@ export 'src/add_ons/indicators_ui/rsi/rsi_indicator_config.dart';
 export 'src/add_ons/indicators_ui/smi/smi_indicator_config.dart';
 export 'src/add_ons/indicators_ui/stochastic_oscillator_indicator/stochastic_oscillator_indicator_config.dart';
 export 'src/add_ons/indicators_ui/williams_r/williams_r_indicator_config.dart';
+export 'src/add_ons/indicators_ui/volume_indicator/volume_indicator_config.dart';
 export 'src/add_ons/indicators_ui/zigzag_indicator/zigzag_indicator_config.dart';
 export 'src/add_ons/repository.dart';
 export 'src/deriv_chart/interactive_layer/interactive_layer_export.dart';
@@ -79,6 +80,7 @@ export 'src/deriv_chart/chart/data_visualization/chart_series/indicators_series/
 export 'src/deriv_chart/chart/data_visualization/chart_series/indicators_series/smi_series.dart';
 export 'src/deriv_chart/chart/data_visualization/chart_series/indicators_series/stochastic_oscillator_series.dart';
 export 'src/deriv_chart/chart/data_visualization/chart_series/indicators_series/williams_r_series.dart';
+export 'src/deriv_chart/chart/data_visualization/chart_series/indicators_series/volume_series.dart';
 export 'src/deriv_chart/chart/data_visualization/chart_series/indicators_series/zigzag_series.dart';
 export 'src/deriv_chart/chart/data_visualization/chart_series/line_series/line_painter.dart';
 export 'src/deriv_chart/chart/data_visualization/chart_series/line_series/line_series.dart';
