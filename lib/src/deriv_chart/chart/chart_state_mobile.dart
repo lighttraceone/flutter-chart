@@ -7,7 +7,7 @@ class _ChartStateMobile extends _ChartState {
   void initState() {
     super.initState();
 
-    _bottomSectionHeight =
+    _bottomSectionHeight = widget.bottomChartHeightFraction ??
         _getBottomIndicatorsSectionHeightFraction(widget.bottomConfigs.length);
   }
 
@@ -15,10 +15,10 @@ class _ChartStateMobile extends _ChartState {
   void didUpdateWidget(covariant Chart oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.bottomConfigs.length != widget.bottomConfigs.length) {
-      _bottomSectionHeight = _getBottomIndicatorsSectionHeightFraction(
-        widget.bottomConfigs.length,
-      );
+    if (oldWidget.bottomConfigs.length != widget.bottomConfigs.length ||
+        oldWidget.bottomChartHeightFraction != widget.bottomChartHeightFraction) {
+      _bottomSectionHeight = widget.bottomChartHeightFraction ??
+          _getBottomIndicatorsSectionHeightFraction(widget.bottomConfigs.length);
     }
   }
 

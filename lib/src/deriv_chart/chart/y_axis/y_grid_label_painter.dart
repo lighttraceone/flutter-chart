@@ -52,8 +52,17 @@ class YGridLabelPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // 估算文字半高，避免标签被 ClipRect 截断
+    final double textHalfHeight =
+        (style.yLabelStyle.fontSize ?? 10) * (style.yLabelStyle.height ?? 1) / 2;
+
     for (final double quote in gridLineQuotes) {
       final double y = quoteToCanvasY(quote);
+
+      // 跳过会超出画布上下边界的标签
+      if (y - textHalfHeight < 0 || y + textHalfHeight > size.height) {
+        continue;
+      }
 
       paintText(
         canvas,

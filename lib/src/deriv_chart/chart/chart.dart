@@ -87,6 +87,7 @@ class Chart extends StatefulWidget {
     this.bottomChartTitleBuilder,
     this.bottomChartDividerColor,
     this.bottomChartMaxGridLines,
+    this.bottomChartHeightFraction,
     Key? key,
   }) : super(key: key);
 
@@ -218,6 +219,10 @@ class Chart extends StatefulWidget {
 
   /// Maximum number of horizontal grid lines for bottom charts.
   final int? bottomChartMaxGridLines;
+
+  /// 底部指标区域占整体图表高度的比例（0.0–1.0）。
+  /// 为 null 时按指标数量自动计算。
+  final double? bottomChartHeightFraction;
 
   /// Chart's indicators
   final Repository<IndicatorConfig>? indicatorsRepo;

@@ -79,6 +79,7 @@ class DerivChart extends StatefulWidget {
     this.bottomChartTitleBuilder,
     this.bottomChartDividerColor,
     this.bottomChartMaxGridLines,
+    this.bottomChartHeightFraction,
     Key? key,
   }) : super(key: key);
 
@@ -236,6 +237,10 @@ class DerivChart extends StatefulWidget {
 
   /// Maximum number of horizontal grid lines for bottom charts.
   final int? bottomChartMaxGridLines;
+
+  /// 底部指标区域占整体图表高度的比例（0.0–1.0）。
+  /// 为 null 时按指标数量自动计算。
+  final double? bottomChartHeightFraction;
 
   @override
   _DerivChartState createState() => _DerivChartState();
@@ -443,6 +448,7 @@ class _DerivChartState extends State<DerivChart> {
                 bottomChartTitleBuilder: widget.bottomChartTitleBuilder,
                 bottomChartDividerColor: widget.bottomChartDividerColor,
                 bottomChartMaxGridLines: widget.bottomChartMaxGridLines,
+                bottomChartHeightFraction: widget.bottomChartHeightFraction,
               ),
               if (widget.indicatorsRepo == null) _buildIndicatorsIcon(),
               if (widget.drawingToolsRepo == null && widget.showDrawingToolsIcon)

@@ -103,16 +103,21 @@ class _BottomChartMobileState extends BasicChartState<BottomChartMobile> {
                   if (widget.showFrame) _buildChartFrame(context),
                   if (!widget.isHidden)
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
+                        Container(
+                          margin: const EdgeInsets.only(top: 4, bottom: 4, left: 12, right: 12),
+                          child: widget.customTitleWidget ?? _buildIndicatorLabelMobile(),
+                        ),
                         Expanded(child: super.build(context)),
                         _buildDivider(),
                       ],
                     ),
-                  Positioned(
-                    top: 4,
-                    left: widget.bottomChartTitleMargin?.left ?? 10,
-                    child: widget.customTitleWidget ?? _buildIndicatorLabelMobile(),
-                  )
+                  // Positioned(
+                  //   top: 4,
+                  //   left: widget.bottomChartTitleMargin?.left ?? 10,
+                  //   child: widget.customTitleWidget ?? _buildIndicatorLabelMobile(),
+                  // )
                 ],
               ),
       ),
@@ -237,9 +242,7 @@ class IndicatorLabelMobile extends StatelessWidget {
   Widget _buildIcons(BuildContext context) => Row(
         children: <Widget>[
           _buildIcon(
-            iconData: isHidden
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
+            iconData: isHidden ? Icons.visibility_off_outlined : Icons.visibility_outlined,
             context: context,
             onPressed: () {
               onHideUnhideToggle?.call();
@@ -276,8 +279,7 @@ class IndicatorLabelMobile extends StatelessWidget {
           color: Colors.transparent,
           clipBehavior: Clip.antiAlias,
           child: IconButton(
-            style: IconButton.styleFrom(
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+            style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
             icon: Icon(
               iconData,
               size: 16,
