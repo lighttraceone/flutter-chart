@@ -600,12 +600,22 @@ class XAxisModel extends ChangeNotifier {
   }) {
     _updateIsLive(isLive);
     _updateGranularity(granularity);
+
+    // 在 _updateEntries 之前更新 epoch 边界，确保内部的
+    // _clampRightBoundEpoch() 使用正确的数据范围进行视口约束。
+    // 当调用方未显式传入 minEpoch/maxEpoch 时，自动从 entries 推导。
+    if (entries != null && entries.isNotEmpty) {
+      _minEpoch = minEpoch ?? entries.first.epoch;
+      _maxEpoch = maxEpoch ?? entries.last.epoch;
+    } else {
+      _minEpoch = minEpoch ?? _minEpoch;
+      _maxEpoch = maxEpoch ?? _maxEpoch;
+    }
+    _maxCurrentTickOffset = maxCurrentTickOffset ?? _maxCurrentTickOffset;
+
     _updateEntries(entries);
 
-    _minEpoch = minEpoch ?? _minEpoch;
-    _maxEpoch = maxEpoch ?? _maxEpoch;
     _dataFitPadding = dataFitPadding ?? _dataFitPadding;
-    _maxCurrentTickOffset = maxCurrentTickOffset ?? _maxCurrentTickOffset;
     _snapMarkersToIntervals = snapMarkersToIntervals ?? _snapMarkersToIntervals;
   }
 
