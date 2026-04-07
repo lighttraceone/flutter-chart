@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 /// Default top bound quote.
 const double defaultTopBoundQuote = 60;
@@ -24,6 +25,7 @@ class ChartAxisConfig {
     this.showEpochGrid = true,
     this.showFrame = false,
     this.smoothScrolling = true,
+    this.timeLabelFormatter,
   });
 
   /// Top quote bound target for animated transition.
@@ -71,6 +73,19 @@ class ChartAxisConfig {
   ///
   /// Default is `true`.
   final bool smoothScrolling;
+
+  /// Custom formatter for X-axis time labels.
+  ///
+  /// When provided, replaces the default [timeLabel] function for rendering
+  /// timestamps on the X-axis. Use this to customise the date/time format
+  /// per granularity (e.g. `HH:mm` for intraday, `MM/dd` for daily).
+  ///
+  /// The function receives a [DateTime] in local time and must return the
+  /// display string for that timestamp.
+  ///
+  /// If `null`, the built-in [timeLabel] format logic is used.
+  @nonVirtual
+  final String Function(DateTime)? timeLabelFormatter;
 
   /// Creates a copy of this ChartAxisConfig but with the given fields replaced.
   ChartAxisConfig copyWith({

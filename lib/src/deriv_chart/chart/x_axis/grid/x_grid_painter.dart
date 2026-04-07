@@ -11,6 +11,7 @@ class XGridPainter extends CustomPainter {
     required this.style,
     required this.timestamps,
     required this.msPerPx,
+    this.timeLabelFormatter,
   });
 
   /// X-coordinates of time labels.
@@ -25,6 +26,11 @@ class XGridPainter extends CustomPainter {
   /// Specifies the zoom level of the chart.
   final double msPerPx;
 
+  /// Optional custom formatter for X-axis time labels.
+  ///
+  /// When non-null, overrides the default [timeLabel] function.
+  final String Function(DateTime)? timeLabelFormatter;
+
   @override
   void paint(Canvas canvas, Size size) {
     if (timestamps.isEmpty || xCoords.isEmpty) {
@@ -38,6 +44,7 @@ class XGridPainter extends CustomPainter {
       xCoords: xCoords,
       style: style,
       msPerPx: msPerPx,
+      timeLabelFormatter: timeLabelFormatter,
     );
   }
 
@@ -45,7 +52,8 @@ class XGridPainter extends CustomPainter {
   bool shouldRepaint(XGridPainter oldDelegate) =>
       timestamps != oldDelegate.timestamps ||
       xCoords != oldDelegate.xCoords ||
-      style != oldDelegate.style;
+      style != oldDelegate.style ||
+      timeLabelFormatter != oldDelegate.timeLabelFormatter;
 
   @override
   bool shouldRebuildSemantics(XGridPainter oldDelegate) => false;

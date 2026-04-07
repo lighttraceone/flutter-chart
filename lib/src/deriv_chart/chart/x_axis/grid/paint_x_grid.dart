@@ -8,6 +8,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// Paints x-axis grid lines and labels.
+///
+/// [timeLabelFormatter] is an optional custom formatter for time labels.
+/// When provided, it overrides the default [timeLabel] function.
 void paintXGrid(
   Canvas canvas,
   Size size, {
@@ -15,6 +18,7 @@ void paintXGrid(
   required ChartTheme style,
   required List<DateTime> timestamps,
   required double msPerPx,
+  String Function(DateTime)? timeLabelFormatter,
 }) {
   assert(timestamps.length == xCoords.length);
   final GridStyle gridStyle = style.gridStyle;
@@ -36,6 +40,7 @@ void paintXGrid(
       xCoords: xCoords,
       gridStyle: gridStyle,
       timestamps: timestamps,
+      timeLabelFormatter: timeLabelFormatter,
     );
   } else {
     _paintTimeLabels(
@@ -44,6 +49,7 @@ void paintXGrid(
       xCoords: xCoords,
       gridStyle: gridStyle,
       timestamps: timestamps,
+      timeLabelFormatter: timeLabelFormatter,
     );
   }
 }
@@ -87,11 +93,14 @@ void _paintTimeLabels(
   required List<double> xCoords,
   required GridStyle gridStyle,
   required List<DateTime> timestamps,
+  String Function(DateTime)? timeLabelFormatter,
 }) {
   for (int index = 0; index < timestamps.length; index++) {
     paintText(
       canvas,
-      text: timeLabel(timestamps[index]),
+      text: timeLabelFormatter != null
+          ? timeLabelFormatter(timestamps[index])
+          : timeLabel(timestamps[index]),
       anchor: Offset(
         xCoords[index],
         size.height - gridStyle.xLabelsAreaHeight / 2,
@@ -107,6 +116,7 @@ void _paintTimeLabelsWeb(
   required List<double> xCoords,
   required GridStyle gridStyle,
   required List<DateTime> timestamps,
+  String Function(DateTime)? timeLabelFormatter,
 }) {
   final TextStyle textStyle = TextStyle(
     fontSize: gridStyle.xLabelStyle.fontSize,
@@ -117,7 +127,9 @@ void _paintTimeLabelsWeb(
   for (int index = 0; index < timestamps.length; index++) {
     paintText(
       canvas,
-      text: timeLabel(timestamps[index]),
+      text: timeLabelFormatter != null
+          ? timeLabelFormatter(timestamps[index])
+          : timeLabel(timestamps[index]),
       anchor: Offset(
         xCoords[index],
         size.height - gridStyle.xLabelsAreaHeight / 2,

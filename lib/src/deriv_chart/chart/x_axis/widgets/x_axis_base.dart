@@ -212,6 +212,10 @@ class XAxisState extends State<XAxisBase> with TickerProviderStateMixin {
                             .toList(),
                         style: _chartTheme,
                         msPerPx: _model.msPerPx,
+                        timeLabelFormatter: context
+                            .read<ChartConfig>()
+                            .chartAxisConfig
+                            .timeLabelFormatter,
                       ),
                     ),
                   ),
