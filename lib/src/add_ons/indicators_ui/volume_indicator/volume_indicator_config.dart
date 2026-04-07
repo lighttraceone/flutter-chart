@@ -64,6 +64,25 @@ class VolumeIndicatorConfig extends IndicatorConfig {
   @override
   String get title => 'Volume';
 
+  /// Y 轴成交量标签使用紧凑格式（K / M / B），避免原始数字过长。
+  @override
+  String Function(double)? get quoteFormatter => _formatCompact;
+
+  /// 将成交量数值格式化为紧凑表示。
+  static String _formatCompact(double value) {
+    final double abs = value.abs();
+    if (abs >= 1000000000) {
+      return '${(value / 1000000000).toStringAsFixed(2)}B';
+    }
+    if (abs >= 1000000) {
+      return '${(value / 1000000).toStringAsFixed(2)}M';
+    }
+    if (abs >= 1000) {
+      return '${(value / 1000).toStringAsFixed(2)}K';
+    }
+    return value.toStringAsFixed(2);
+  }
+
   @override
   IndicatorItem getItem(
     UpdateIndicator updateIndicator,

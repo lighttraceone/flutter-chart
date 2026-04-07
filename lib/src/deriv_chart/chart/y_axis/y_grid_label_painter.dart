@@ -15,6 +15,7 @@ class YGridLabelPainter extends CustomPainter {
     required this.bottomBoundQuote,
     required this.topPadding,
     required this.bottomPadding,
+    this.quoteFormatter,
   });
 
   /// Number of digits after decimal point in price.
@@ -50,6 +51,11 @@ class YGridLabelPainter extends CustomPainter {
   /// and is tracked separately to detect when repainting is needed.
   final double bottomPadding;
 
+  /// Optional custom formatter for Y-axis labels.
+  ///
+  /// When non-null, replaces the default `quote.toStringAsFixed(pipSize)`.
+  final String Function(double)? quoteFormatter;
+
   @override
   void paint(Canvas canvas, Size size) {
     // 估算文字半高，避免标签被 ClipRect 截断
@@ -66,7 +72,9 @@ class YGridLabelPainter extends CustomPainter {
 
       paintText(
         canvas,
-        text: quote.toStringAsFixed(pipSize),
+        text: quoteFormatter != null
+            ? quoteFormatter!(quote)
+            : quote.toStringAsFixed(pipSize),
         style: style.yLabelStyle,
         anchor: Offset(size.width - style.labelHorizontalPadding, y),
         anchorAlignment: Alignment.centerRight,
@@ -82,7 +90,8 @@ class YGridLabelPainter extends CustomPainter {
       topBoundQuote != oldDelegate.topBoundQuote ||
       bottomBoundQuote != oldDelegate.bottomBoundQuote ||
       topPadding != oldDelegate.topPadding ||
-      bottomPadding != oldDelegate.bottomPadding;
+      bottomPadding != oldDelegate.bottomPadding ||
+      quoteFormatter != oldDelegate.quoteFormatter;
 
   @override
   bool shouldRebuildSemantics(YGridLabelPainter oldDelegate) => false;

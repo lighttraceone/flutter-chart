@@ -35,6 +35,7 @@ class BottomChartMobile extends BasicChart {
     super.currentTickAnimationDuration,
     super.quoteBoundsAnimationDuration,
     super.maxQuoteGridLines,
+    super.quoteFormatter,
   }) : super(key: key, mainSeries: series, pipSize: pipSize);
 
   /// For candles: Duration of one candle in ms.

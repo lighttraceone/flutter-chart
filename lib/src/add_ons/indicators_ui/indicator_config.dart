@@ -119,6 +119,13 @@ abstract class IndicatorConfig extends AddOnConfig {
   /// Short display title.
   String get shortTitle => title;
 
+  /// Optional custom formatter for Y-axis quote labels on the bottom chart.
+  ///
+  /// When non-null, overrides the default `quote.toStringAsFixed(pipSize)`
+  /// rendering. Subclasses (e.g. [VolumeIndicatorConfig]) can override this
+  /// getter to provide specialised display (e.g. compact number notation).
+  String Function(double)? get quoteFormatter => null;
+
   /// Indicators supported field types
   static final Map<String, FieldIndicatorBuilder> supportedFieldTypes =
       <String, FieldIndicatorBuilder>{

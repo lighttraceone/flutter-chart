@@ -17,6 +17,7 @@ class YGridLabelPainterWeb extends YGridLabelPainter {
     required super.bottomBoundQuote,
     required super.topPadding,
     required super.bottomPadding,
+    super.quoteFormatter,
   });
 
   @override
@@ -32,7 +33,9 @@ class YGridLabelPainterWeb extends YGridLabelPainter {
 
       paintText(
         canvas,
-        text: quote.toStringAsFixed(pipSize),
+        text: quoteFormatter != null
+            ? quoteFormatter!(quote)
+            : quote.toStringAsFixed(pipSize),
         style: textStyle,
         anchor: Offset(size.width - style.labelHorizontalPadding, y),
         anchorAlignment: Alignment.centerRight,

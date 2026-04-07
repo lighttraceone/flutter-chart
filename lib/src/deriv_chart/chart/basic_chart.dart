@@ -36,6 +36,7 @@ class BasicChart extends StatefulWidget {
     this.currentTickAnimationDuration = _defaultDuration,
     this.quoteBoundsAnimationDuration = _defaultDuration,
     this.maxQuoteGridLines,
+    this.quoteFormatter,
   })  : chartAxisConfig = chartAxisConfig ?? const ChartAxisConfig(),
         super(key: key);
 
@@ -50,6 +51,13 @@ class BasicChart extends StatefulWidget {
 
   /// The axis configuration of the chart.
   final ChartAxisConfig chartAxisConfig;
+
+  /// Optional custom formatter for Y-axis quote labels.
+  ///
+  /// When non-null, overrides the default `quote.toStringAsFixed(pipSize)`
+  /// in [YGridLabelPainter]. Used by bottom charts such as Volume to render
+  /// compact notation (e.g. `1.23M` instead of `1234567`).
+  final String Function(double)? quoteFormatter;
 
   /// Callback provided by library user.
   final VisibleQuoteAreaChangedCallback? onQuoteAreaChanged;
@@ -495,6 +503,7 @@ class BasicChartState<T extends BasicChart> extends State<T> with TickerProvider
                     bottomBoundQuote: _bottomBoundQuote,
                     topPadding: _topPadding,
                     bottomPadding: _bottomPadding,
+                    quoteFormatter: widget.quoteFormatter,
                   )
                 : YGridLabelPainter(
                     gridLineQuotes: gridLineQuotes,
@@ -505,6 +514,7 @@ class BasicChartState<T extends BasicChart> extends State<T> with TickerProvider
                     bottomBoundQuote: _bottomBoundQuote,
                     topPadding: _topPadding,
                     bottomPadding: _bottomPadding,
+                    quoteFormatter: widget.quoteFormatter,
                   ),
           ),
         ),

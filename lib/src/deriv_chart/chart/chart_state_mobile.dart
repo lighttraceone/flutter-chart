@@ -80,6 +80,9 @@ class _ChartStateMobile extends _ChartState {
             showMoveDownIcon: bottomSeries.length > 1 &&
                 indexInBottomConfigs != bottomSeries.length - 1,
             showFrame: context.read<ChartConfig>().chartAxisConfig.showFrame,
+            // 各指标可通过 quoteFormatter 自定义 Y 轴标签格式，
+            // 例如 VolumeIndicatorConfig 使用紧凑数字（K/M/B）。
+            quoteFormatter: config.quoteFormatter,
           );
 
           return (repository?.getHiddenStatus(index) ?? false)
